@@ -1,4 +1,6 @@
-package com.example.swipeimage
+package com.example.swipeimage.slider
+
+import com.example.swipeimage.R
 
 
 data class listnew(

@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.swipeimage.Sliding
+import com.example.swipeimage.slider.Sliding
 import com.example.swipeimage.a_propos.Apropos
 import com.example.swipeimage.inscription.Inscription
 import com.google.accompanist.pager.ExperimentalPagerApi
