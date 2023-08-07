@@ -1,6 +1,7 @@
 package com.example.swipeimage.inscription
 
 import android.annotation.SuppressLint
+import android.provider.ContactsContract.CommonDataKinds.Email
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -39,10 +40,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -54,32 +53,74 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.example.swipeimage.R
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 
+import com.example.swipeimage.inscription.ViewModel.RegistrationViewModel
+import com.example.swipeimage.inscription.data.datasource.Datasource.InscriptionPresonne
+import kotlinx.coroutines.launch
+
+
+data class Inscri(
+    val emailVal: String,
+    var passwordVal: String,
+                   )
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun Inscription(navController: NavController) {
+fun Inscription(navController: NavController, viewModel: RegistrationViewModel,
+                onRegistrationComplete: () -> Unit) {
     val context = LocalContext.current
     val scaffoldState = rememberScaffoldState()
 
     // class inscription contient tous:
 
-    val nameVal = remember { mutableStateOf("") }
-    val emailVal = remember { mutableStateOf("") }
-    val phoneVal = remember { mutableStateOf("") }
-    val passwordVal = remember { mutableStateOf("") }
-    val confirmPasswordVal = remember { mutableStateOf("") }
+
+    // ... autres composants
+
+    val coroutineScope = rememberCoroutineScope()
+
+
+   // val nameVal = rememberSaveable { mutableStateOf("") }
+    var nameVal by rememberSaveable { mutableStateOf("") }
+
+//********
+    //********var emailVal by remember { mutableStateOf("") }
+    var emailVal by rememberSaveable { mutableStateOf("") }
+///*******
+
+   // val phoneVal = rememberSaveable { mutableStateOf("") }
+    var phoneVal by rememberSaveable { mutableStateOf("") }
+
+//*****
+   // var passwordVal by remember { mutableStateOf("") }
+    var passwordVal by rememberSaveable { mutableStateOf("") }
+//******
+    var confirmPasswordVal by remember { mutableStateOf("") }
 
     val passwordVisibility = remember { mutableStateOf(false) }
     val confirmPasswordVisibility = remember { mutableStateOf(false) }
 
-    var SexeSelect = remember { mutableStateOf(true) }
-    var InsType = remember { mutableStateOf(true) }
+  //  var SexeSelect = remember { mutableStateOf(true) }
+    //import androidx.compose.runtime.*
+    var InsType by rememberSaveable { mutableStateOf(TypeInscription.Client)}
 
+   // var InsType = remember { mutableStateOf(true) }
+    var SexeSelect by rememberSaveable { mutableStateOf(Sexe.Homme) }
+
+
+    /////verification contraintes
+   val isEmailValid by remember(emailVal) { mutableStateOf(emailVal.contains("@") && emailVal.length >= 6) }
+
+    // Vérifier si le mot de passe contient au moins 8 caractères et des caractères spéciaux
+    val isPasswordValid by remember(passwordVal) { mutableStateOf(passwordVal.length >= 8 && passwordVal.any { it.isLetterOrDigit().not() }) }
+
+
+    ////
+    ////
+    ////
+    //// La logique de ROOM MVVM :
 
 
 
@@ -136,8 +177,11 @@ fun Inscription(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     OutlinedTextField(
-                        value = nameVal.value,
-                        onValueChange = { nameVal.value = it },
+                       // value = nameVal.value,
+                       // onValueChange = { nameVal.value = it },
+                        value = nameVal,
+                        onValueChange = { nameVal = it },
+                     shape = RoundedCornerShape(24.dp),
                         label = { Text(text = "Nom", color = Black) },
                         placeholder = { Text(text = "Votre Nom", color = Black) },
                         singleLine = true,
@@ -146,15 +190,18 @@ fun Inscription(navController: NavController) {
                             Icon(imageVector = Icons.Filled.Person, contentDescription = "")
 
                         },
-
+                     //   isError = nameVal.value.isEmpty(),
+                        isError = nameVal.isEmpty(),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Black, textColor = Black
                         )
                     )
 
                     OutlinedTextField(
-                        value = emailVal.value,
-                        onValueChange = { emailVal.value = it },
+                        value = emailVal,
+                        onValueChange = { emailVal = it },
+
+                        shape = RoundedCornerShape(24.dp),
                         label = { Text(text = "Adresse Mail ", color = Black) },
                         placeholder = { Text(text = "exemple@gmail.com", color = Black) },
                         singleLine = true,
@@ -165,14 +212,23 @@ fun Inscription(navController: NavController) {
                         },
 
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+
+
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Black, textColor = Black
-                        )
+                        ),
+
+
+                     isError = !isEmailValid && emailVal.isNotEmpty()// Afficher une erreur si l'adresse e-mail est non vide mais invalide
                     )
 
                     OutlinedTextField(
-                        value = phoneVal.value,
-                        onValueChange = { phoneVal.value = it },
+                      //  value = phoneVal.value,
+                        //onValueChange = { phoneVal.value = it },
+                        value = phoneVal,
+                        onValueChange = { phoneVal = it },
+
+                        shape = RoundedCornerShape(24.dp),
                         label = { Text(text = "numero de telephone", color = Black) },
                         placeholder = { Text(text = "+216 33333333", color = Black) },
                         singleLine = true,
@@ -181,7 +237,8 @@ fun Inscription(navController: NavController) {
                             Icon(imageVector = Icons.Filled.Phone, contentDescription = "")
 
                         },
-
+                     //   isError = phoneVal.value.isEmpty() ,
+                        isError = phoneVal.isEmpty() ,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Black, textColor = Black
@@ -189,8 +246,9 @@ fun Inscription(navController: NavController) {
                     )
 
                     OutlinedTextField(
-                        value = passwordVal.value,
-                        onValueChange = { passwordVal.value = it },
+                        value = passwordVal,
+                        onValueChange = { passwordVal = it },
+                        shape = RoundedCornerShape(24.dp),
                         label = { Text(text = "mot de passe", color = Black) },
                         placeholder = { Text(text = "mot de passe", color = Black) },
                         singleLine = true,
@@ -218,6 +276,8 @@ fun Inscription(navController: NavController) {
                             }
                         },
 
+                       isError = !isPasswordValid && passwordVal.isNotEmpty(),
+                        //// Afficher une erreur si le mot de passe est non vide mais invalide
 
                         visualTransformation = if (passwordVisibility.value) VisualTransformation.None
                         else PasswordVisualTransformation()
@@ -226,8 +286,9 @@ fun Inscription(navController: NavController) {
                         ////
                     )
                     OutlinedTextField(
-                        value = confirmPasswordVal.value,
-                        onValueChange = { confirmPasswordVal.value = it },
+                        value = confirmPasswordVal,
+                        onValueChange = { confirmPasswordVal = it },
+                        shape = RoundedCornerShape(24.dp),
                         label = { Text(text = "Confirmation mot de passe", color = Black) },
                         placeholder = { Text(text = "Réécrivez votre mot de passe", color = Black) },
                         singleLine = true,
@@ -249,6 +310,10 @@ fun Inscription(navController: NavController) {
                                 )
                             }
                         },
+
+                        isError = (confirmPasswordVal != passwordVal),
+                        //// Afficher une erreur si le mot de passe est non vide mais invalide
+
                         visualTransformation = if (confirmPasswordVisibility.value) VisualTransformation.None
                         else PasswordVisualTransformation()
                     )
@@ -271,10 +336,16 @@ fun Inscription(navController: NavController) {
                                     modifier = Modifier.padding(start = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                  //  RadioButton(
+                                    //    selected = SexeSelect.value,
+                                      //  onClick = { SexeSelect.value = true }
+                                   // )
+
                                     RadioButton(
-                                        selected = SexeSelect.value,
-                                        onClick = { SexeSelect.value = true }
+                                        selected = SexeSelect == Sexe.Homme   ,
+                                        onClick = { SexeSelect = Sexe.Homme }
                                     )
+
                                     Text(
                                         text = Sexe.Homme.displayName,
                                         style = MaterialTheme.typography.body1
@@ -282,9 +353,13 @@ fun Inscription(navController: NavController) {
 
 
 
+                               //     RadioButton(
+                                 //       selected = !SexeSelect.value,
+                                   //     onClick = { SexeSelect.value = false }
+                                    //)
                                     RadioButton(
-                                        selected = !SexeSelect.value,
-                                        onClick = { SexeSelect.value = false }
+                                        selected = SexeSelect == Sexe.Femme   ,
+                                        onClick = { SexeSelect = Sexe.Femme }
                                     )
                                     Text(
                                         text = Sexe.Femme.displayName,
@@ -311,20 +386,30 @@ fun Inscription(navController: NavController) {
                                     modifier = Modifier.padding(start = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                 //   RadioButton(
+                                   //     selected = InsType.value,
+                                     //   onClick = { InsType.value = true }
+                                    //)
                                     RadioButton(
-                                        selected = InsType.value,
-                                        onClick = { InsType.value = true }
+                                        selected = InsType== TypeInscription.Client,
+                                        onClick = { InsType = TypeInscription.Client }
                                     )
+
                                     Text(
                                         text = TypeInscription.Client.displayName,
                                         style = MaterialTheme.typography.body1
                                     )
 
 
+                                  //  RadioButton(
+                                    //    selected = !InsType.value,
+                                       // onClick = { InsType.value = false }
+                                    //)
                                     RadioButton(
-                                        selected = !InsType.value,
-                                        onClick = { InsType.value = false }
-                                    )
+                                            selected = InsType == TypeInscription.Pres,
+                                         onClick = { InsType= TypeInscription.Pres}
+                                        )
+
                                     Text(
                                         text = TypeInscription.Pres.displayName,
                                         style = MaterialTheme.typography.body1
@@ -334,59 +419,120 @@ fun Inscription(navController: NavController) {
 
                             }
 
-
-
-
                     Spacer(modifier = Modifier.padding(5.dp))
 
-
-
-
-
                     Button(
-                        colors = ButtonDefaults.buttonColors(backgroundColor = White),
+                       // colors = ButtonDefaults.buttonColors(backgroundColor = White),
                         onClick = {
-                            if (nameVal.value.isEmpty()) {
+
+
+                          //  if (nameVal.value.isEmpty())
+                                if (nameVal.isEmpty()){
                                 Toast.makeText(
                                     context,
                                     "entrer votre nom !!",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                            } else if (emailVal.value.isEmpty()) {
+                            } else if (emailVal.isEmpty()){
+
                                 Toast.makeText(
                                     context,
                                     "entrer votre adresse mail!",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                            } else if (phoneVal.value.isEmpty()) {
+                            }
+                            else if(!isEmailValid){
+
+                                Toast.makeText(
+                                    context,
+                                    "Votre mail doit contenir @ !!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+
+                           }
+
+                            //else if (phoneVal.value.isEmpty())
+                                else if (phoneVal.isEmpty()) {
                                 Toast.makeText(
                                     context,
                                     "entrer votre numero de telephone!",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                            } else if (passwordVal.value.isEmpty()) {
+                            } else if (passwordVal.isEmpty()){
+
                                 Toast.makeText(
                                     context,
                                     "entrer votre mot de passe!",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                            } else if (confirmPasswordVal.value.isEmpty()) {
+                            }
+                           else if(!isPasswordValid){
+
+                                Toast.makeText(
+                                    context,
+                                    "Vérifier si le mot de passe contient au moins 8 caractères et des caractères spéciaux",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                            }
+                            else if (confirmPasswordVal.isEmpty()) {
                                 Toast.makeText(
                                     context,
                                     "entrer une autre foie votre mot de passe !",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                            } else {
+                            }
+
+                            else {
 
                                 //confirm password
-                                if (confirmPasswordVal.value == passwordVal.value ){
+                                if (confirmPasswordVal == passwordVal){
 
-                                Toast.makeText(
+                                    val newUser =  InscriptionPresonne(mail = emailVal, passwordun = passwordVal)
+                                    /////
+                                    coroutineScope.launch {
+                                        val isUnique = viewModel.isEmailUnique(newUser.mail)
+                                        if (!isUnique) {
+                                            // L'e-mail n'est pas unique, afficher un message d'erreur
+                                            Toast.makeText(
+                                                context,
+                                                "Cet e-mail est déjà utilisé",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@launch
+                                        }
+
+                                        viewModel.registerUser(
+                                            newUser
+                                            //    InscriptionPresonne(
+                                            //     mail = emailVal,
+                                            //   passwordun = passwordVal
+                                            //)
+                                        )
+                                        onRegistrationComplete()
+
+                                    Toast.makeText(
                                     context,
-                                    "inscription avec succes!",
+                                  //  "inscription avec succes Bienvenue ${nameVal.value.uppercase()}!",
+                                        "inscription avec succes Bienvenue ${nameVal.uppercase()}!",
                                     Toast.LENGTH_SHORT
                                 ).show()
+                                  //  var PersonneRep = PersonneRep(emailVal,passwordVal)
+                                    //onSubmit(InscriptionBdsql)
+                                    //RegistrationUseCase(PersonneRep)
+
+                                   // registerUser(nameVal ,emailVal, phoneVal,passwordVal , SexeSelect, InsType )
+
+                                 //aller au service prestataire
+                                    if (InsType == TypeInscription.Pres ){
+                                        navController.navigate("PrestataireService")
+
+                                    }
+
+
                             }
+                                }
                             else {
                                     Toast.makeText(
                                         context,
@@ -398,7 +544,21 @@ fun Inscription(navController: NavController) {
                             }
                         },
                         shape = RoundedCornerShape(50.dp),
-                        border = BorderStroke(width = 1.dp, color = Color(0xFF000000))
+                        border = BorderStroke(width = 1.dp, color = Color(0xFF000000)),
+
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (nameVal.isNotEmpty() && emailVal.isNotEmpty() &&  phoneVal.isNotEmpty() && passwordVal.isNotEmpty() && confirmPasswordVal.isNotEmpty() && isPasswordValid && isEmailValid && (confirmPasswordVal== passwordVal)) {
+                                // Couleur lorsque le bouton est activé et tous les champs sont remplis
+
+                                Color.Green
+                            } else {
+                                // Couleur lorsque le bouton est désactivé (c'est-à-dire lorsque certains champs sont vides)
+                                Color.Red
+                            }
+                        ),
+
+
+                        enabled = nameVal.isNotEmpty() && emailVal.isNotEmpty() &&  phoneVal.isNotEmpty() && passwordVal.isNotEmpty() && confirmPasswordVal.isNotEmpty()
 
 
                     ) {
@@ -410,14 +570,9 @@ fun Inscription(navController: NavController) {
                     Text(text = "Connectez-vous", color = Black,
                         modifier = Modifier.clickable {
                             /*navController.navigate("login_page")*/
-                            navController.navigate("pagelogin")
+                            navController.navigate("Login")
                         }
                     )
-
-
-
-
-
 
 
                 }
@@ -446,11 +601,12 @@ fun NavigatePage() {
 }
 */
 
-@Composable
+/*@Composable
 fun InscriptionPrev() {
     val navController = rememberNavController()
-    Inscription(navController = navController)
-}
+    val registrationViewModel: RegistrationViewModel = viewModel()
+    Inscription(navController = navController,registrationViewModel)
+}*/
 
 
 
@@ -458,6 +614,6 @@ fun InscriptionPrev() {
 @Composable
 fun afficheins(){
     
-InscriptionPrev()
+//InscriptionPrev()
 
 }

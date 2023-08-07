@@ -181,22 +181,9 @@ Box(modifier = Modifier
         fontWeight = FontWeight.Bold
     )
 }
-
-
-                
             }
-
-
-
         }
-
-
         }
-
-
-
-
-
 
     Button(
         onClick = {

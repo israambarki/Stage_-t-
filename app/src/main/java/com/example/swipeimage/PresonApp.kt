@@ -1,4 +1,4 @@
-package com.example.swipeimage.inscription
+package com.example.swipeimage
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

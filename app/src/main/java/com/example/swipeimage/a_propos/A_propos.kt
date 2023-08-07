@@ -264,7 +264,7 @@ fun Apropos() {
                 horizontalAlignment = CenterHorizontally,
                 modifier = Modifier
                     .padding(10.dp)
-                    .border(2.dp, Color.Black, RoundedCornerShape(16.dp))
+                    //.border(2.dp, Color.Black, RoundedCornerShape(16.dp))
                     .padding(8.dp)
             ) {
                 androidx.compose.material3.Text(

@@ -2,8 +2,8 @@ package com.example.swipeimage.dependency_injection
 
 import android.content.Context
 import androidx.room.Room
-import com.example.swipeimage.inscription.PersonneDatabase
-import com.example.swipeimage.inscription.PostDaw
+import com.example.swipeimage.inscription.data.datasource.Datasource.PersonneDatabase
+import com.example.swipeimage.inscription.data.datasource.Datasource.PostDaw
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

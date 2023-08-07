@@ -1,0 +1,42 @@
+package com.example.swipeimage.inscription.data.datasource.Datasource
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
+
+
+@Dao
+interface PostDaw {
+
+    @Insert
+    //mettre les donnees :
+suspend fun InsertPresonne(Presonne: InscriptionPresonne);
+
+
+    @Update
+    suspend fun updatePresonne(Presonne: InscriptionPresonne)
+
+    //recuperer les donnees
+    @Query("select * from Inscription")
+    //prendre les donnees:
+   fun GetInfoInscription() : Flow<List<InscriptionPresonne>>
+
+ //@Query("SELECT * FROM Inscription WHERE nom_utilisateur = :nom_utilisateur ")
+  //fun GetNom(nom_utilisateur: String)
+
+
+  //GetUserEmail vous permet de récupérer un utilisateur en fonction de son :Email.
+    @Query("SELECT * FROM Inscription WHERE Email = :Email ")
+    fun GetUserEmail(Email: String): InscriptionPresonne?
+
+
+    // ca me permet de verifier est ce que le mail est unique ou non : donc il va compter le nombre de foi que le mail entré existe dans la base de donnee et il va faire une condition
+    // en effet il va comparer le  count(*) a 0 s'ils sont egaux donc ce mail n'existe pas dans la BD
+    //sinon il va me donner une erreur.
+    @Query("SELECT COUNT(*) FROM Inscription WHERE Email = :email")
+    suspend fun countUsersWithEmail(email: String): Int
+
+}
+

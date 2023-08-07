@@ -78,6 +78,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.swipeimage.inscription.ViewModel.RegistrationViewModel
 import com.example.swipeimage.ui.theme.SwipeimageTheme
 
 
@@ -380,19 +381,28 @@ androidx.compose.material.Scaffold(
 //lina tzdiha
 // nzid arg o5er description wki ta3mel on click thezek wte5ou el arg heka
 
-        val listItems = listOf(
-            CardItem(1, "Description de l'Item 1", R.drawable.image1,"Explicatio 1 "),
-            CardItem(2,  "Description de l'Item 2", R.drawable.image2,"Explicatio 2 "),
-            CardItem(3,  "Description de l'Item 3", R.drawable.image3,"Explicatio 3 "),
-            CardItem(4,  "Description de l'Item 4", R.drawable.image4,"Explicatio 4 "),
-            CardItem(5, "Description de l'Item 5", R.drawable.image5,"Explicatio 5 ")
-        )
-        MyListWithCards(listItems,navController) }
+   //     val listItems = listOf(
+     //       CardItem(1, "Description de l'Item 1", R.drawable.image1,"Explicatio 1 "),
+       //     CardItem(2,  "Description de l'Item 2", R.drawable.image2,"Explicatio 2 "),
+         //   CardItem(3,  "Description de l'Item 3", R.drawable.image3,"Explicatio 3 "),
+           // CardItem(4,  "Description de l'Item 4", R.drawable.image4,"Explicatio 4 "),
+            //CardItem(5, "Description de l'Item 5", R.drawable.image5,"Explicatio 5 ")
+        //)
+       // MyListWithCards(listItems,navController)
+    ///---bich nekteb fct o5ra bich n'appeleha toul 5ater 7echti beha fil Prestatire:
+        afficherliste(navController)
+
+    }
 
 
     }
 )
 }
+
+
+
+
+
 
 
 

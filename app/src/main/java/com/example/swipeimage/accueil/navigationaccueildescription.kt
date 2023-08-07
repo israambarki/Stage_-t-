@@ -1,14 +1,22 @@
 package com.example.swipeimage.accueil
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.swipeimage.AjoutService.Prestataire.Prestataire
+
 import com.example.swipeimage.slider.Sliding
 import com.example.swipeimage.a_propos.Apropos
 import com.example.swipeimage.inscription.Inscription
+import com.example.swipeimage.inscription.LoginView
+import com.example.swipeimage.inscription.ViewModel.LoginViewModel
+import com.example.swipeimage.inscription.ViewModel.RegistrationViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 
 @OptIn(ExperimentalPagerApi::class)
@@ -17,6 +25,9 @@ fun Nav(){
 
 
     val navcontroller = rememberNavController()
+    val ViewModel: RegistrationViewModel = viewModel()
+    val ViewModell: LoginViewModel = viewModel()
+    val context = LocalContext.current
 
     NavHost(navController = navcontroller, startDestination ="sliding"){
 
@@ -30,7 +41,26 @@ fun Nav(){
         composable("Inscription")
 
         {
-            Inscription(navcontroller)
+            Inscription(navcontroller, viewModel = ViewModel){
+
+                navcontroller.navigate("Login")//hethi n3awthoha bil profil ...
+
+            }
+
+        }
+
+
+
+       composable("Login") {
+            LoginView(navcontroller,viewModel = ViewModell){
+                navcontroller.navigate("Accueil")
+
+            }
+        }
+
+        composable("PrestataireService"){
+            Prestataire(onSubmit = {})
+
 
         }
 
