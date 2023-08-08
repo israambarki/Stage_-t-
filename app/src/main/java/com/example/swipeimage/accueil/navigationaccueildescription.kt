@@ -34,7 +34,7 @@ fun Nav(){
         composable("Accueil")
 
             {
-            accueil(navcontroller)
+            accueil(navcontroller,viewModel = ViewModel)
 
         }
 

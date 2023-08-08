@@ -38,5 +38,17 @@ suspend fun InsertPresonne(Presonne: InscriptionPresonne);
     @Query("SELECT COUNT(*) FROM Inscription WHERE Email = :email")
     suspend fun countUsersWithEmail(email: String): Int
 
+    // Vérifier si un utilisateur est connecté en fonction de son e-mail et de son mot de passe
+    @Query("SELECT * FROM Inscription WHERE Email = :email AND mot_de_passe = :password AND Connection = 1")
+    suspend fun VerifierU(email: String, password: String): InscriptionPresonne?
+
+   @Query("UPDATE Inscription SET Connection = :isConnected WHERE Email = :email AND mot_de_passe = :password")
+    suspend fun UpdateConn(email: String, password: String, isConnected: Boolean)
+
+    //récupérer l'utilisateur avec la dernière connexion (lim 1 ) , un seul -- avec le plus grand id ( le dernier)!
+    @Query("SELECT * FROM Inscription ORDER BY id DESC LIMIT 1")
+    suspend fun getLastLoggedInUser(): InscriptionPresonne?
+
+
 }
 

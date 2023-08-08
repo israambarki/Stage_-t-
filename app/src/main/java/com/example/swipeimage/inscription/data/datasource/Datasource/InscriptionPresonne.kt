@@ -23,11 +23,13 @@ data class InscriptionPresonne(
          // val phonenumb : String,
     @ColumnInfo(name = "mot_de_passe")
     var passwordun: String,
-       //                        @Ignore
-         //                      var confpass : String,
+       // @Ignore
+         // var confpass : String,
 
-           //                    val Sexe : String,
-             //                  val Type : String
+           //val Sexe : String,
+             //val Type : String
+   @ColumnInfo(name = "Connection")
+    var isConnected: Boolean = false // Nouvel attribut pour l'état de connexion
 
 
                                )

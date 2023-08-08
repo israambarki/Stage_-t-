@@ -67,7 +67,7 @@ data class Inscri(
     var passwordVal: String,
                    )
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
 @Composable
 fun Inscription(navController: NavController, viewModel: RegistrationViewModel,
                 onRegistrationComplete: () -> Unit) {
@@ -116,6 +116,9 @@ fun Inscription(navController: NavController, viewModel: RegistrationViewModel,
     // Vérifier si le mot de passe contient au moins 8 caractères et des caractères spéciaux
     val isPasswordValid by remember(passwordVal) { mutableStateOf(passwordVal.length >= 8 && passwordVal.any { it.isLetterOrDigit().not() }) }
 
+// Ajout de l'état de connexion
+  //  var isConnected by remember { mutableStateOf(false) }
+    //val isConnected: Boolean by viewModel.Verifier().collectAsState()
 
     ////
     ////
@@ -176,6 +179,11 @@ fun Inscription(navController: NavController, viewModel: RegistrationViewModel,
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
+
+
+
+
                     OutlinedTextField(
                        // value = nameVal.value,
                        // onValueChange = { nameVal.value = it },
@@ -196,6 +204,11 @@ fun Inscription(navController: NavController, viewModel: RegistrationViewModel,
                             unfocusedBorderColor = Black, textColor = Black
                         )
                     )
+
+
+
+
+
 
                     OutlinedTextField(
                         value = emailVal,
@@ -419,6 +432,7 @@ fun Inscription(navController: NavController, viewModel: RegistrationViewModel,
 
                             }
 
+
                     Spacer(modifier = Modifier.padding(5.dp))
 
                     Button(
@@ -510,6 +524,8 @@ fun Inscription(navController: NavController, viewModel: RegistrationViewModel,
                                             //   passwordun = passwordVal
                                             //)
                                         )
+
+                                        viewModel.updateConnectionStatus(newUser.mail, newUser.passwordun) // Mise à jour de l'état de connexion
                                         onRegistrationComplete()
 
                                     Toast.makeText(
@@ -576,12 +592,19 @@ fun Inscription(navController: NavController, viewModel: RegistrationViewModel,
 
 
                 }
+                //ici coroutine::
+
+
+
             }
 
 
         }
     }
 }
+
+
+
 
 
 /*@Composable

@@ -59,6 +59,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,6 +81,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.swipeimage.inscription.ViewModel.RegistrationViewModel
 import com.example.swipeimage.ui.theme.SwipeimageTheme
+import kotlinx.coroutines.launch
 
 
 /*class AccueilActivity : ComponentActivity() {
@@ -112,7 +114,9 @@ import com.example.swipeimage.ui.theme.SwipeimageTheme
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun accueil(navController: NavHostController) {
+fun accueil(navController: NavHostController,viewModel: RegistrationViewModel) {
+
+    val coroutineScope = rememberCoroutineScope()
 
     var bottomState by remember {
         mutableStateOf("Accueil") }
@@ -165,7 +169,23 @@ androidx.compose.material.Scaffold(
 
         BottomNavigationItem(
             selected = bottomState == "Connecter",
-            onClick = { bottomState = "Connecter" ;  navController.navigate("Inscription") },
+            onClick = { bottomState = "Connecter" ; /* navController.navigate("Inscription") */////verifier la connexion:
+                coroutineScope.launch {
+                    /*  val V = viewModel.Verifier(
+                          emailVal,
+                          passwordVal
+                      ) // Remplacez par les véritables informations d'identification de l'utilisateur*/
+
+                    val LastConnection = viewModel.GetLastUserConnection()
+
+                    if (LastConnection?.isConnected == true) {
+
+                        navController.navigate("PrestataireService")
+                        // Utilisateur déjà connecté, rediriger vers l'écran principal ou une autre interface
+                    }else {
+                        navController.navigate("Inscription")
+                    }
+                } },
             label = { Text(text = "Connecter", color = Color.White)  },
             icon = {
                 Icon(imageVector =Icons.Default.AccountCircle , contentDescription ="" )
@@ -267,7 +287,25 @@ androidx.compose.material.Scaffold(
             Row() {
                 Button(
                     onClick = {
-                        navController.navigate("Inscription")
+                       // navController.navigate("Inscription")
+
+                        // aller a l'espace client
+                        coroutineScope.launch {
+                            /*  val V = viewModel.Verifier(
+                                  emailVal,
+                                  passwordVal
+                              ) // Remplacez par les véritables informations d'identification de l'utilisateur*/
+
+                            val LastConnection = viewModel.GetLastUserConnection()
+
+                            if (LastConnection?.isConnected == true) {
+
+                                navController.navigate("PrestataireService")
+                                // Utilisateur déjà connecté, rediriger vers l'écran principal ou une autre interface
+                            }else {
+                                navController.navigate("Inscription")
+                            }
+                        }
 
                     }, modifier = Modifier
                         .padding(20.dp, 70.dp, 27.dp, 0.dp)
@@ -322,7 +360,25 @@ androidx.compose.material.Scaffold(
                 Button(
                     onClick = {
 
-                        navController.navigate("Inscription")
+                   //     navController.navigate("Inscription")
+
+                        //aller a l'espace prestataire
+                        coroutineScope.launch {
+                            /*  val V = viewModel.Verifier(
+                                  emailVal,
+                                  passwordVal
+                              ) // Remplacez par les véritables informations d'identification de l'utilisateur*/
+
+                            val LastConnection = viewModel.GetLastUserConnection()
+
+                            if (LastConnection?.isConnected == true) {
+
+                                navController.navigate("PrestataireService")
+                                // Utilisateur déjà connecté, rediriger vers l'écran principal ou une autre interface
+                            }else {
+                                navController.navigate("Inscription")
+                            }
+                        }
 
                     }, modifier = Modifier
 
