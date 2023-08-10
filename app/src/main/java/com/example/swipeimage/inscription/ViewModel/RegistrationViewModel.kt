@@ -1,4 +1,4 @@
-package com.example.swipeimage.inscription.ViewModel
+/*package com.example.swipeimage.inscription.ViewModel
 
 import android.app.Application
 import android.widget.Toast
@@ -9,8 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.*
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.swipeimage.inscription.data.datasource.Datasource.InscriptionPresonne
-import com.example.swipeimage.inscription.data.datasource.Datasource.PersonneDatabase
+import com.example.swipeimage.Data.datasource.Datasource.InscriptionPresonne
+import com.example.swipeimage.Data.datasource.Datasource.PersonneDatabase
 import kotlinx.coroutines.launch
 
 /*class RegistrationViewModel(private val registrationUseCase: RegistrationUseCase) : ViewModel() {
@@ -29,7 +29,6 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
     suspend fun GetLastUserConnection(): InscriptionPresonne? {
         return userDao.getLastLoggedInUser()
     }
-
 
 
     // Vérifier si un utilisateur est connecté en utilisant l'e-mail et le mot de passe
@@ -62,4 +61,4 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
             }
         }
     }
-}
+}*/

@@ -1,6 +1,6 @@
 /*package com.example.swipeimage.inscription.DomainTest
 
-import com.example.swipeimage.inscription.Inscri
+import com.example.swipeimage.View.inscriptionconnecter.Inscri
 import com.example.swipeimage.inscription.data.datasource.Datasource.InscriptionPresonne
 import com.example.swipeimage.inscription.data.datasource.repository.PersonneRep
 
