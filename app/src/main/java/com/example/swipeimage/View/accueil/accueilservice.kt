@@ -7,6 +7,7 @@ import com.example.swipeimage.R
 
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -66,6 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -118,6 +120,7 @@ import kotlinx.coroutines.launch
 fun accueil(navController: NavHostController,viewModel: RegistrationViewModel) {
 
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var bottomState by remember {
         mutableStateOf("Accueil") }
@@ -177,11 +180,21 @@ androidx.compose.material.Scaffold(
                           passwordVal
                       ) // Remplacez par les véritables informations d'identification de l'utilisateur*/
 
-                    val LastConnection = viewModel.GetLastUserConnection()
+                    //val LastConnection = viewModel.GetLastUserConnection()
+                    val LastConnection = viewModel.GetUserConnection()
 
                     if (LastConnection?.isConnected == true) {
+                        if (LastConnection?.Type == "Prestataire" ) {
+                            navController.navigate("Profil_Prestataire")
+                        }else{
+                            navController.navigate("Profil_Prestataire") // t3awathha bil profil client :
+                            Toast.makeText(
+                                context,
+                                "Vous etes un Client",
+                                Toast.LENGTH_SHORT
+                            ).show()
 
-                        navController.navigate("PrestataireService")
+                        }
                         // Utilisateur déjà connecté, rediriger vers l'écran principal ou une autre interface
                     }else {
                         navController.navigate("Inscription")
@@ -247,7 +260,7 @@ androidx.compose.material.Scaffold(
 
                     contentScale = ContentScale.Crop
                 )
-                Text("Servilinkkk", fontWeight = FontWeight.Bold)
+                Text("Servilink", fontWeight = FontWeight.Bold)
 
 
             }
@@ -301,7 +314,7 @@ androidx.compose.material.Scaffold(
 
                             if (LastConnection?.isConnected == true) {
 
-                                navController.navigate("PrestataireService")
+                                navController.navigate("Profil_Prestataire")
                                 // Utilisateur déjà connecté, rediriger vers l'écran principal ou une autre interface
                             }else {
                                 navController.navigate("Inscription")
@@ -341,8 +354,6 @@ androidx.compose.material.Scaffold(
                                 .align(Alignment.CenterHorizontally),
                                 //.padding(start = 18.dp),
 
-
-
                             style = TextStyle(
                                 fontSize = 9.sp,
                                 lineHeight = 18.sp,
@@ -374,7 +385,7 @@ androidx.compose.material.Scaffold(
 
                             if (LastConnection?.isConnected == true) {
 
-                                navController.navigate("PrestataireService")
+                                navController.navigate("Profil_Prestataire")
                                 // Utilisateur déjà connecté, rediriger vers l'écran principal ou une autre interface
                             }else {
                                 navController.navigate("Inscription")

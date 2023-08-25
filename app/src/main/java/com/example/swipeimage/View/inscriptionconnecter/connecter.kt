@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
@@ -39,11 +40,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -64,10 +67,16 @@ import com.example.swipeimage.R
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.lifecycleScope
+import com.example.swipeimage.Data.remote.ApiResponseLogin
+import com.example.swipeimage.Data.remote.ConnexionRequest
+import com.example.swipeimage.Data.remote.ResponseReq
 import com.example.swipeimage.ViewModel.ViewModel.LoginViewModel
+import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun LoginView(navController: NavController, viewModel: LoginViewModel,
               onLoginSuccess: () -> Unit) {
@@ -80,14 +89,18 @@ fun LoginView(navController: NavController, viewModel: LoginViewModel,
     val passwordVisibility = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+//api
+    val loginResponseState = viewModel.loginResponse.collectAsState()
+    val loginResponse = loginResponseState.value
+
 
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color(0xFFF0E5C4)),
-        contentAlignment = Alignment.BottomCenter
-    ) {
+            .background(color = Color(0xFFF0E5C4))
+            .verticalScroll(rememberScrollState()),
+        contentAlignment = Alignment.BottomCenter) {
 
       //  Image(
         //    painter = painterResource(R.drawable.back),
@@ -99,7 +112,7 @@ fun LoginView(navController: NavController, viewModel: LoginViewModel,
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+              //  .verticalScroll(rememberScrollState())
                 ,
             horizontalAlignment = Alignment.CenterHorizontally,
 
@@ -239,16 +252,20 @@ fun LoginView(navController: NavController, viewModel: LoginViewModel,
 
             Button(
                 onClick = {
+                    //ena n7eb e5er we7ed dima yssajlou y5alih
+
                     //viewModel.viewModelScope.launch
                     coroutineScope.launch {
                     val success = viewModel.loginUser(emailVal, passwordVal)
                     if (success) {
+                      //  if(){
+                        viewModel.updateConnectionStatus(emailVal,passwordVal,true)
                        onLoginSuccess()
-                      /*  Toast.makeText(
+                     Toast.makeText(
                             context,
-                            "Bravo!!!!!",
+                            "Connexion avec succès",
                             Toast.LENGTH_SHORT
-                        ).show()*/
+                        ).show()
                     } else {
                         // Handle login failure, show error message, etc.
                         Toast.makeText(
@@ -257,7 +274,16 @@ fun LoginView(navController: NavController, viewModel: LoginViewModel,
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-                          }},
+
+                        /// consommation des apis ::::
+
+                        viewModel.ApiLogin(emailVal, passwordVal)
+
+
+                          }
+
+
+                          },
                 shape = RoundedCornerShape(50.dp),
                 border = BorderStroke(width = 1.dp, color = Color(0xFF000000)),
                 colors = ButtonDefaults.buttonColors(Color(0xFF00416A)),
@@ -268,6 +294,34 @@ fun LoginView(navController: NavController, viewModel: LoginViewModel,
                 Text(text = "Se connecter", fontSize = 20.sp, color = Color.White)
             }
             Spacer(modifier = Modifier.height(30.dp))
+            // Afficher la réponse d'authentification
+            // Afficher l'indicateur de chargement ou la réponse d'authentification
+            //APIIII , ba3d bich nzidha lil ROOM...
+            if (loginResponse != null) {
+                if (loginResponse.message == "Loading...") {
+                    CircularProgressIndicator() // Indicateur de chargement
+                } else {
+                    if (loginResponse.statusCode == 200) {
+                        // Connexion réussie, naviguer vers l'interface Profil
+                        onLoginSuccess()
+                    }else{
+                        /*  Text(text = "Reponse: ${loginResponse.message ?: ""}", style = TextStyle(
+                       fontSize = 16.sp,
+                       fontFamily = FontFamily.Serif ,
+                       fontWeight = FontWeight(200),
+                       color = Color(0xFFC02D5C),
+                       textAlign = TextAlign.Center,
+                   ))*/
+                        Toast.makeText(
+                            context,
+                            "Verifier votre mot de passe ou votre mail",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                    }
+                }
+            }
+
             TextButton(onClick = { /*TODO*/ }) {
                 Text(
                     text = "Mot de passe oublié?",

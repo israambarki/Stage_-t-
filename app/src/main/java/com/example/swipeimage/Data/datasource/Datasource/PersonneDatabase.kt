@@ -16,7 +16,7 @@ import dagger.hilt.android.HiltAndroidApp
 //
 //
 
-@Database(entities =[InscriptionPresonne::class], version = 2)
+@Database(entities =[InscriptionPresonne::class], version = 7)
 
 abstract class PersonneDatabase : RoomDatabase(){
 
@@ -38,14 +38,71 @@ abstract  fun PresonneDAO(): PostDaw
         }
     }
 
-        fun getInstance(context: Context): PersonneDatabase {
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // Ajouter une colonne 'nom' à la table 'InscriptionPresonne'
+            // Ajouter les colonnes pour le sexe, le numéro de téléphone et l'URL de la photo
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN nom_utilisateur TEXT NOT NULL DEFAULT ''")
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN Sexe TEXT NOT NULL DEFAULT 'Homme'")
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN numero_de_telephone TEXT NOT NULL DEFAULT ''")
+
+        }
+    }
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN photo TEXT NOT NULL DEFAULT ''")
+        }
+    }
+
+
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN address TEXT NOT NULL DEFAULT ''")
+        }
+    }
+
+    val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN pseudo TEXT NOT NULL DEFAULT ''")
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN Prenom TEXT NOT NULL DEFAULT ''")
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN naissance TEXT NOT NULL DEFAULT ''")
+        }
+    }
+
+    val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN Type TEXT NOT NULL DEFAULT ''")
+        }
+    }
+
+
+
+   /* val MIGRATION_1_3 = object : Migration(1, 3) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // Ajouter les colonnes pour le sexe, le numéro de téléphone et l'URL de la photo
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN nom_utilisateur TEXT NOT NULL DEFAULT ''")
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN Sexe TEXT NOT NULL DEFAULT ''")
+            database.execSQL("ALTER TABLE Inscription ADD COLUMN numero_de_telephone TEXT NOT NULL DEFAULT ''")
+          //  database.execSQL("ALTER TABLE Inscription ADD COLUMN photoUrl TEXT")
+        }
+    }*/
+
+
+
+
+    fun getInstance(context: Context): PersonneDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     PersonneDatabase::class.java,
                     "InscriptionPresonne.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7)
+
                     .build()
                 INSTANCE = instance
                 instance

@@ -1,6 +1,7 @@
 package com.example.swipeimage.Data.datasource.Datasource
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -51,6 +52,30 @@ suspend fun InsertPresonne(Presonne: InscriptionPresonne);
     //récupérer l'utilisateur avec la dernière connexion (lim 1 ) , un seul -- avec le plus grand id ( le dernier)!
     @Query("SELECT * FROM Inscription ORDER BY id DESC LIMIT 1")
     suspend fun getLastLoggedInUser(): InscriptionPresonne?
+
+    @Query("SELECT * FROM Inscription WHERE Connection = 1")
+    suspend fun GetUserConnection(): InscriptionPresonne?
+
+
+
+    @Delete
+    suspend fun deleteUser(user: InscriptionPresonne)
+   @Query("DELETE from Inscription")
+    suspend fun deleteAll()
+
+    @Query("UPDATE Inscription SET Connection = 0  where Connection = 1")
+    suspend fun deconnecter()
+    //update id a 0
+    @Query("UPDATE Inscription SET id = 0")
+    suspend fun SetId()
+
+    @Update
+    suspend fun updateUser(user: InscriptionPresonne)
+
+    // Mettre à jour le champ photoUrl de l'utilisateur connecté
+  //  @Query("UPDATE Inscription SET photoUrl = :newPhotoUrl WHERE Connection = 1")
+   // suspend fun updateConnectedUserPhotoUrl(newPhotoUrl: String)
+
 
 
 }

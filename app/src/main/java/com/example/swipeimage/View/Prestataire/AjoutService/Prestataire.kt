@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 
@@ -39,9 +40,12 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,12 +62,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.swipeimage.Data.remote.CreateServiceRequest
+import com.example.swipeimage.Data.remote.GetUserDTO
+import com.example.swipeimage.Data.remote.ServiceCategoryDTO
+
+import com.example.swipeimage.Data.remote.ServiceNames
+
 import com.example.swipeimage.R
+import com.example.swipeimage.ViewModel.ViewModel.ServiceViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 
 //pour datepicker//+++++
 import java.util.Calendar
 import java.util.Locale
+import java.util.UUID
 
 data class Service(
     val serviceName: String,
@@ -76,7 +92,7 @@ data class Service(
 //data class FormPres()
 
 @Composable
-fun Prestataire(onSubmit: (Service) -> Unit) {
+fun Prestataire(onSubmit: (Service) -> Unit, viewmodel :ServiceViewModel) {
     val context1 = LocalContext.current
 
     var titre by remember { mutableStateOf("") }
@@ -88,8 +104,7 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
     var selectedDateText by remember { mutableStateOf("") }
     val PrixValid by remember(unité) { mutableStateOf(unité.matches(Regex("\\d*"))) }
 
-
-
+    var shouldAddService by remember { mutableStateOf(false) }
 
 
     var ErreurDes by remember { mutableStateOf(false) }
@@ -100,7 +115,7 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
     val isDescriptionValid by remember(description) { mutableStateOf(description.length >= 20) }
 
 
-   // var buttonColor by remember { mutableStateOf(Color) }
+    // var buttonColor by remember { mutableStateOf(Color) }
 
 
     var expanded by remember { mutableStateOf(false) }
@@ -112,10 +127,26 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
 
     var selectedText by remember { mutableStateOf("") }
 //C'est une variable d'état qui est utilisée pour stocker le texte sélectionné par l'utilisateur dans le menu déroulant.
+    var selectedService by remember { mutableStateOf("") }
+    val servicesNames = viewmodel.servicesNames.collectAsState()
 
 
+    val coroutineScope = rememberCoroutineScope()
     val suggestions =
-        listOf(Service("Service A",titre,unité,description,date), Service("Service B",titre,unité,description,date), Service("Service C",titre,unité,description,date))
+        listOf(
+            Service("Service A", titre, unité, description, date),
+            Service("Service B", titre, unité, description, date),
+            Service("Service C", titre, unité, description, date)
+        )
+
+
+    //service API
+
+    // Récupérez les noms de services à partir du ViewModel
+    //  val servicesNamesState = remember { mutableStateOf<List<String>>(emptyList()) }
+    //  val servicesNames = viewmodel.getServicesNames().collectAsState(initial = emptyList())
+    val servicesNamesState by viewmodel.servicesNames.collectAsState()
+
 
 
     Column(
@@ -124,7 +155,7 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
 
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState())//t5alik ki tji tekteb tescrolli lil fo9
             //.padding(16.dp)
             .background(color = Color(0xFFF0E4C3))
     ) {
@@ -169,11 +200,158 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
                 textAlign = TextAlign.Center
             )
         )
-
-
-
-
         Row(
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+            //.padding(16.dp)
+            ,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+
+        ) {
+
+            OutlinedTextField(
+                value = selectedService,
+                onValueChange = { selectedService = it },
+                shape = RoundedCornerShape(24.dp),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth(0.8f),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    unfocusedBorderColor = Color.Black, textColor = Color.Black
+                ),
+                //isError = selectedText.isEmpty(),
+                label = { Text("Choisir le Service") },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        expanded = !expanded
+                    }) {
+                        Icon(
+                            if (expanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                            contentDescription = "Expand/Collapse"
+                        )
+                    }
+                }
+            )
+
+            if (expanded) {
+                val menuShape: Shape =
+                    RoundedCornerShape(24.dp) // Définir le rayon de coin ici (8.dp dans cet exemple)
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                        .fillMaxWidth(0.8f)
+                        .clip(menuShape)
+                ) {
+                    servicesNames.value.forEach { serviceName ->
+                        DropdownMenuItem(
+                            onClick = {
+                                selectedService = serviceName
+                                expanded = false
+                            }
+                        ) {
+                            Text(serviceName)
+                        }
+                    }
+                }
+
+                // Bouton pour rafraîchir les services
+
+
+            }
+        }
+        Button(onClick = { viewmodel.refreshServices() },shape = RoundedCornerShape(50.dp),
+            border = BorderStroke(width = 1.dp, color = Color(0xFF000000)), colors = ButtonDefaults.buttonColors(Color(0xFF00416A))) {
+            Text("Rafraîchir les services",fontSize = 10.sp, color = Color.White)
+        }
+
+        /*  OutlinedTextField(
+                        value = selectedService,
+                        onValueChange = { selectedService = it },
+                        shape = RoundedCornerShape(24.dp),
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            unfocusedBorderColor = Color.Black, textColor = Color.Black
+                        ),
+                        isError = selectedText.isEmpty(),
+                        label = { Text("Choisir le Service") },
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                expanded = !expanded
+                            }) {
+                                Icon(
+                                    if (expanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                                    contentDescription = "Expand/Collapse"
+                                )
+                            }
+                        }
+                    )
+
+                    if (expanded) {
+                        val menuShape: Shape =
+                            RoundedCornerShape(24.dp) // Définir le rayon de coin ici (8.dp dans cet exemple)
+
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.fillMaxWidth(0.8f)
+                                .fillMaxWidth(0.8f)
+                                .clip(menuShape)
+                            //  .border(width = 30.dp, color = Color.Black, shape = RoundedCornerShape(24.dp))
+                            ,
+                        ) {
+                            servicesNames.forEach { service ->
+                                DropdownMenuItem(
+                                    onClick = {
+                                        selectedService = service.name
+                                        expanded = false
+                                    }
+                                ) {
+                                    Text(service.name)
+                                }
+                            }
+                        }
+                    }*/
+
+
+        /*     /// ALTERNATIVES POUR AFFICHAGE SERVICES :
+        // Afficher l'indicateur de chargement si la réponse est en cours de récupération
+        if (servicesResponse.message == "Loading...") {
+            CircularProgressIndicator()
+        } else if (servicesResponse.data != null) {
+            // Afficher la liste déroulante avec les noms des services
+            val serviceData = servicesResponse.data // Store data in a variable
+            val services = serviceData?.map { it.name } ?: emptyList() // Use a safe call
+            var selectedService by remember { mutableStateOf("") }
+            DropdownMenu(
+                expanded = true, // La liste déroulante est toujours ouverte ici
+                onDismissRequest = {},
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                services.forEach { serviceName ->
+                    DropdownMenuItem(onClick = {
+                        selectedService = serviceName
+                    }) {
+                        Text(serviceName)
+                    }
+                }
+            }
+
+            // Afficher le nom du service sélectionné
+            Text("Service sélectionné : $selectedService")
+
+        } else {
+            // Afficher un message d'erreur si la récupération a échoué
+            Text("Erreur lors de la récupération des services")
+        }
+*/
+
+
+        /*   Row(
             modifier = Modifier
                 .fillMaxWidth(0.8f)
                 //.padding(16.dp)
@@ -249,7 +427,7 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
                     }
                 }
             }
-        }
+        }*/
         //les autres textfields:
         OutlinedTextField(
             value = titre,
@@ -261,8 +439,7 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
             isError = titre.isEmpty(),
             modifier = Modifier
                 .fillMaxWidth(0.8f)
-                .padding(16.dp)
-               ,
+                .padding(16.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 unfocusedBorderColor = Color.Black, textColor = Color.Black
             ),
@@ -286,12 +463,11 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
             placeholder = { Text(text = "Vous Devez decrire votre Service", color = Color.Black) },
             isError = description.isNotEmpty() && !isDescriptionValid,
 
-          //  singleLine = true,
+            //  singleLine = true,
             leadingIcon = { Icon(Icons.Outlined.Info, contentDescription = "") },
             modifier = Modifier
                 .fillMaxWidth(0.8f)
-                .padding(16.dp)
-               ,
+                .padding(16.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 unfocusedBorderColor = Color.Black, textColor = Color.Black
             ),
@@ -305,14 +481,15 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-        }else if (!isDescriptionValid){
+        } else if (!isDescriptionValid) {
             Text(
-            text ="Vous devez décrire votre service"+"\n"+ "Vous devez écrire au minimum 20 caracteres",
-            color = Color.Red,
-            modifier = Modifier.padding(bottom = 8.dp),
+                text = "Vous devez décrire votre service" + "\n" + "Vous devez écrire au minimum 20 caracteres",
+                color = Color.Red,
+                modifier = Modifier.padding(bottom = 8.dp),
                 style = TextStyle(
-                    textAlign = TextAlign.Center)
-        )
+                    textAlign = TextAlign.Center
+                )
+            )
         }
 
 
@@ -330,8 +507,7 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
             leadingIcon = { Icon(Icons.Outlined.Info, contentDescription = "") },
             modifier = Modifier
                 .fillMaxWidth(0.8f)
-                .padding(16.dp)
-               ,
+                .padding(16.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 unfocusedBorderColor = Color.Black, textColor = Color.Black
             ),
@@ -340,18 +516,17 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
 
         if (ErreurU && !PrixValid) {
             Text(
-                text = "Vous devez saisir une unité" +"\n"+"Le prix doit contenir uniquement des chiffres",
+                text = "Vous devez saisir une unité" + "\n" + "Le prix doit contenir uniquement des chiffres",
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 8.dp),
                 style = TextStyle(
-                    textAlign = TextAlign.Center)
+                    textAlign = TextAlign.Center
+                )
             )
         }
 
 
-
-
-/*
+        /*
         OutlinedTextField(
             value = date,
             onValueChange = { date = formatToDateString(it) },
@@ -393,8 +568,32 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
             shape = RoundedCornerShape(24.dp),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             singleLine = true,
-            leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
-            modifier = Modifier
+            //  leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
+            leadingIcon = {
+                androidx.compose.material3.Icon(
+                    Icons.Default.DateRange,
+                    contentDescription = null,
+                    modifier = Modifier.clickable {
+                        openDatePickerDialog(context, selectedDate) { year, month, day ->
+                            selectedDate.set(year, month, day)
+
+                            // Mettre à jour le texte du champ de texte avec la nouvelle date sélectionnée
+                            val formattedDate =
+                                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(
+                                    selectedDate.time
+                                )
+                            selectedDateText = formattedDate
+                            // Assurez-vous d'utiliser un MutableState pour mettre à jour la valeur du champ de texte
+                            // Par exemple : selectedDateText.value = formattedDate
+
+
+                        }
+                    }
+                )
+            },
+
+
+            /* modifier = Modifier
                 .fillMaxWidth(0.8f)
                 .padding(16.dp)
                 .clickable {
@@ -409,30 +608,38 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
 
 
                     }
-                },
+                } */
             isError = selectedDateText.isEmpty()
         )
 
 
-
-
-
-
-
-
-
-
-        Button(modifier = Modifier.padding(top = 100.dp),
+        Button(
+            modifier = Modifier.padding(top = 100.dp),
 
             onClick = {
 
+                val createServiceRequest = CreateServiceRequest(
+                    user = GetUserDTO("test","test","test","ISraa@12*","57482369","test@yahoo.fr","kelibia","Homme",true,roleId = UUID.fromString("94614254-1032-48a1-ac41-59b4b3d9d025")) ,
+                    title = titre,
+                    description = description,
+                    serviceCategory = UUID.fromString("c63b7904-2ff1-48bb-9a99-9f48c44ef2d1") ,
+                    price = 12.5f
+                )
+                viewmodel.createService(createServiceRequest)
+
+
                 //verifier si ts les champs sont remplies
-                if (selectedText.isNotEmpty() && titre.isNotEmpty() && description.isNotEmpty() && date.isNotEmpty() && unité.isNotEmpty() && isDescriptionValid) {
-                val service = Service(selectedText, titre,unité,description,date)
-                onSubmit(service)}
-                else{
+                if (selectedService.isNotEmpty() && titre.isNotEmpty() && description.isNotEmpty() && selectedDateText.isNotEmpty() && unité.isNotEmpty() && isDescriptionValid) {
+                    val service = Service(selectedText, titre, unité, description, selectedDateText)
+                    onSubmit(service)
+                    // pour ajouter a la liste :
+
+                    shouldAddService = true
+
+
+                } else {
                     ErreurT = titre.isEmpty()
-   //met à jour la variable ErreurT en vérifiant si
+                    //met à jour la variable ErreurT en vérifiant si
                     // la variable title (contenant la valeur du champ "Titre") est vide. Si le champ "Titre" est vide,
                     // ErreurT sera mis à true et donc je vais au condition:  (ErreurT && titre.isEmpty()) --> (True and True): entrer , sinon il sera mis à false
 
@@ -442,45 +649,60 @@ fun Prestataire(onSubmit: (Service) -> Unit) {
                     ErreurU = unité.isEmpty()
 
 
-                  //  buttonColor = Color.Red
+                    //  buttonColor = Color.Red
 
 
                 }
             },
-           // modifier = Modifier.fillMaxWidth(),
+            // modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(50.dp),
             border = BorderStroke(width = 1.dp, color = Color(0xFF000000)),
             colors = ButtonDefaults.buttonColors(
-             backgroundColor =
-                 if (selectedText.isNotEmpty() && titre.isNotEmpty() && unité.isNotEmpty() && description.isNotEmpty() && date.isNotEmpty() && isDescriptionValid) {
+                backgroundColor =
+                if (selectedService.isNotEmpty() && titre.isNotEmpty() && unité.isNotEmpty() && description.isNotEmpty() && selectedDateText.isNotEmpty() && isDescriptionValid) {
                     // Couleur lorsque le bouton est activé et tous les champs sont remplis
-                     Color.Green
+                    Color.Green
                     // buttonColor
 
                 } else {
                     // Couleur lorsque le bouton est désactivé (c'est-à-dire lorsque certains champs sont vides)
-                Color.Red
-                // buttonColor
+                    Color.Red
+                    // buttonColor
                 }
 
-              //  backgroundColor = buttonColor
+                //  backgroundColor = buttonColor
 
             ),
-            enabled = selectedText.isNotEmpty() && titre.isNotEmpty() &&  unité.isNotEmpty() && description.isNotEmpty() && date.isNotEmpty() ,
+            enabled = selectedService.isNotEmpty() && titre.isNotEmpty() && unité.isNotEmpty() && description.isNotEmpty() && selectedDateText.isNotEmpty(),
 
-        ) {
+            ) {
             Text("Ajouter le service", fontSize = 20.sp, color = Color.Black)
         }
 
 
+        // Utilisation de LaunchedEffect pour ajouter le service
+        LaunchedEffect(shouldAddService) {
+            if (shouldAddService) {
+                val newService = ServiceBox(
+                    id = viewmodel.services.value.size + 1,
+                    selectedText = selectedService,
+                    titre = titre,
+                    description = description,
+                    unité = unité,
+                    selectedDateText = selectedDateText
+                )
+                viewmodel.addService(newService)
+
+                // Réinitialiser l'indicateur
+                shouldAddService = false
+            }
+        }
 
     }
+}
 //afficher le texte sélectionné et un IconButton pour ouvrir ou fermer le menu déroulant. Le DropdownMenu affiche les suggestions lorsque le menu est ouvert, et lorsque l'utilisateur choisit une suggestion, le texte est mis à jour et le menu est fermé
 
     // Observer les changements dans enabled pour mettre à jour la couleur du bouton
-
-}
-
 
 /*
 //Date version 1
@@ -497,6 +719,10 @@ private fun formatToDateString(input: String): String {
 }
 
 */
+
+
+
+
 
 
 fun openDatePickerDialog(
@@ -521,5 +747,8 @@ fun openDatePickerDialog(
 @Preview
 @Composable
 fun DropdownMenuExamplePreview() {
-    Prestataire(onSubmit = {})
+    val ViewModelS: ServiceViewModel = viewModel()
+
+
+  //  Prestataire(onSubmit = {},ViewModelS)
 }
